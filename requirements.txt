@@ -1,0 +1,4 @@
+Flask>=2.0
+python-dotenv>=0.21.0
+yt-dlp>=2024.4.9
+gunicorn==19.7.1
