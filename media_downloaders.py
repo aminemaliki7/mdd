@@ -48,7 +48,11 @@ def download_pinterest_video(url, output_path='pinterest_videos', filename=None)
 
         pin_id = re.search(r'/pin/(\d+)', url)
         pin_id = pin_id.group(1) if pin_id else uuid.uuid4().hex[:8]
-        output_filename = f"{re.sub(r'[^\w\-_.]', '_', filename) if filename else 'pinterest_' + pin_id}.mp4"
+        if filename:
+            safe_filename = re.sub(r'[^\w\-_.]', '_', filename)
+        else:
+            safe_filename = f"pinterest_{pin_id}"
+        output_filename = f"{safe_filename}.mp4"
         output_file = os.path.join(output_path, output_filename)
 
         cmd = ['yt-dlp', '--merge-output-format', 'mp4', '-o', output_file, '--no-warnings', url]
@@ -80,7 +84,11 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
             elif 'youtu.be' in parsed_url.netloc:
                 video_id = parsed_url.path.lstrip('/')
 
-        output_filename = f"{re.sub(r'[^\w\-_.]', '_', filename) if filename else 'youtube_' + (video_id or uuid.uuid4().hex[:8])}.mp4"
+        if filename:
+            safe_filename = re.sub(r'[^\w\-_.]', '_', filename)
+        else:
+            safe_filename = f"youtube_{video_id or uuid.uuid4().hex[:8]}"
+        output_filename = f"{safe_filename}.mp4"
         output_file = os.path.join(output_path, output_filename)
 
         format_selection = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
