@@ -144,6 +144,7 @@ def download_social_video(url, output_path='social_videos', filename=None):
 
         cmd = [
             'yt-dlp',
+            '--cookies-from-browser', 'firefox',
             '--merge-output-format', 'mp4',
             '-o', output_file,
             '--no-playlist',
