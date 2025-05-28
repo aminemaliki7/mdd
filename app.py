@@ -114,5 +114,29 @@ def download_media(download_id):
 def api_docs():
     return render_template('api_docs.html')
 
+@app.route('/api/download', methods=['POST'])
+def api_download():
+    data = request.get_json()
+    url = data.get("url")
+    filename = data.get("filename", None)
+    media_type = data.get("type", "audio")
+
+    if media_type == "audio":
+        output = download_mp3(url, 'api_audio', filename)
+    elif media_type == "video":
+        output = download_pinterest_video(url, 'api_video', filename)
+    elif media_type == "youtube":
+        quality = data.get("quality", "best")
+        output = download_youtube_video(url, 'api_youtube', filename, quality)
+    elif media_type == "social":
+        output = download_social_video(url, 'api_social', filename)
+    else:
+        return jsonify({"success": False, "error": "Invalid media type."}), 400
+
+    if output:
+        return jsonify({"success": True, "file_path": output})
+    return jsonify({"success": False, "error": "Download failed."}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=False)
