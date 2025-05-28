@@ -5,29 +5,27 @@ import re
 import time
 import uuid
 from urllib.parse import urlparse
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
 
 def check_yt_dlp_installed():
-    """Check if yt-dlp is installed on the system"""
     return shutil.which('yt-dlp') is not None
+
 
 def download_mp3(url, output_path='youtube_audio', filename=None):
     try:
         os.makedirs(output_path, exist_ok=True)
         if not filename:
             filename = f"audio_{uuid.uuid4().hex[:8]}"
-        filename = re.sub(r'[\w\-_.]', '_', filename)
+        filename = re.sub(r'[^\w\-_.]', '_', filename)
         output_file = os.path.join(output_path, f"{filename}.mp3")
-        print(f"Downloading audio from: {url}")
 
         cmd = [
-            'yt-dlp',
-            '--cookies', 'cookies.txt',
-            '-x',
-            '--audio-format', 'mp3',
-            '--audio-quality', '0',
-            '-o', output_file,
-            '--no-playlist',
-            url
+            'yt-dlp', '--cookies', 'cookies.txt',
+            '-x', '--audio-format', 'mp3', '--audio-quality', '0',
+            '-o', output_file, '--no-playlist', url
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
@@ -37,6 +35,7 @@ def download_mp3(url, output_path='youtube_audio', filename=None):
     except Exception as e:
         print(f"Error: {e}")
         return None
+
 
 def download_pinterest_video(url, output_path='pinterest_videos', filename=None):
     try:
@@ -48,7 +47,7 @@ def download_pinterest_video(url, output_path='pinterest_videos', filename=None)
 
         pin_id = re.search(r'/pin/(\d+)', url)
         pin_id = pin_id.group(1) if pin_id else uuid.uuid4().hex[:8]
-        safe_filename = re.sub(r'[\w\-_.]', '_', filename) if filename else f"pinterest_{pin_id}"
+        safe_filename = re.sub(r'[^\w\-_.]', '_', filename) if filename else f"pinterest_{pin_id}"
         output_filename = f"{safe_filename}.mp4"
         output_file = os.path.join(output_path, output_filename)
 
@@ -64,6 +63,7 @@ def download_pinterest_video(url, output_path='pinterest_videos', filename=None)
     except Exception as e:
         print(f"Error: {e}")
         return None
+
 
 def download_youtube_video(url, output_path='youtube_videos', filename=None, quality='best'):
     try:
@@ -81,7 +81,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
             elif 'youtu.be' in parsed_url.netloc:
                 video_id = parsed_url.path.lstrip('/')
 
-        safe_filename = re.sub(r'[\w\-_.]', '_', filename) if filename else f"youtube_{video_id or uuid.uuid4().hex[:8]}"
+        safe_filename = re.sub(r'[^\w\-_.]', '_', filename) if filename else f"youtube_{video_id or uuid.uuid4().hex[:8]}"
         output_filename = f"{safe_filename}.mp4"
         output_file = os.path.join(output_path, output_filename)
 
@@ -96,33 +96,15 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
             format_selection = 'bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]/best'
 
         cmd = [
-            'yt-dlp',
-            '--cookies', 'cookies.txt',
-            '-f', format_selection,
-            '-o', output_file,
-            '--merge-output-format', 'mp4',
-            '--no-playlist',
-            '--no-warnings',
-            url
+            'yt-dlp', '--cookies', 'cookies.txt',
+            '-f', format_selection, '-o', output_file,
+            '--merge-output-format', 'mp4', '--no-playlist', '--no-warnings', url
         ]
-        print(f"Downloading YouTube video: {url} with quality {quality}")
         result = subprocess.run(cmd, capture_output=True, text=True)
-
         if result.returncode != 0:
-            print(f"Primary download failed: {result.stderr}")
-            alt_cmd = [
-                'yt-dlp',
-                '--cookies', 'cookies.txt',
-                '-f', 'b',
-                '-o', output_file,
-                '--merge-output-format', 'mp4',
-                '--no-playlist',
-                url
-            ]
-            print("Trying alternate fallback format...")
+            alt_cmd = ['yt-dlp', '--cookies', 'cookies.txt', '-f', 'b', '-o', output_file, '--merge-output-format', 'mp4', '--no-playlist', url]
             alt_result = subprocess.run(alt_cmd, capture_output=True, text=True)
             if alt_result.returncode != 0:
-                print(f"Alternate download failed: {alt_result.stderr}")
                 return None
 
         return output_file if os.path.exists(output_file) else None
@@ -130,20 +112,17 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
         print(f"Error downloading YouTube video: {e}")
         return None
 
+
 def download_social_video(url, output_path='social_videos', filename=None):
     try:
         os.makedirs(output_path, exist_ok=True)
-        filename = re.sub(r'[\w\-_.]', '_', filename) if filename else f"social_{uuid.uuid4().hex[:8]}"
+        filename = re.sub(r'[^\w\-_.]', '_', filename) if filename else f"social_{uuid.uuid4().hex[:8]}"
         output_file = os.path.join(output_path, f"{filename}.mp4")
 
         cmd = [
-            'yt-dlp',
-            '--cookies', 'cookies.txt',
-            '--merge-output-format', 'mp4',
-            '-o', output_file,
-            '--no-playlist',
-            '--no-warnings',
-            url
+            'yt-dlp', '--cookies', 'cookies.txt',
+            '--merge-output-format', 'mp4', '-o', output_file,
+            '--no-playlist', '--no-warnings', url
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
@@ -153,3 +132,27 @@ def download_social_video(url, output_path='social_videos', filename=None):
     except Exception as e:
         print(f"Error downloading social video: {e}")
         return None
+
+
+@app.route('/api/download', methods=['POST'])
+def api_download():
+    data = request.get_json()
+    url = data.get("url")
+    filename = data.get("filename", None)
+    media_type = data.get("type", "audio")
+
+    if media_type == "audio":
+        output = download_mp3(url, 'api_audio', filename)
+    elif media_type == "video":
+        output = download_pinterest_video(url, 'api_video', filename)
+    elif media_type == "youtube":
+        quality = data.get("quality", "best")
+        output = download_youtube_video(url, 'api_youtube', filename, quality)
+    elif media_type == "social":
+        output = download_social_video(url, 'api_social', filename)
+    else:
+        return jsonify({"success": False, "error": "Invalid media type."}), 400
+
+    if output:
+        return jsonify({"success": True, "file_path": output})
+    return jsonify({"success": False, "error": "Download failed."}), 500
