@@ -21,7 +21,7 @@ def download_mp3(url, output_path='youtube_audio', filename=None):
 
         cmd = [
             'yt-dlp',
-            '--cookies', 'cookies.txt',
+            '--cookies-from-browser', 'firefox',
             '-x',
             '--audio-format', 'mp3',
             '--audio-quality', '0',
@@ -103,7 +103,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
 
         cmd = [
             'yt-dlp',
-            '--cookies', 'cookies.txt',
+            '--cookies-from-browser', 'firefox',
             '-f', format_selection,
             '-o', output_file,
             '--merge-output-format', 'mp4',
@@ -118,7 +118,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
             print(f"Primary download failed: {result.stderr}")
             alt_cmd = [
                 'yt-dlp',
-                '--cookies', 'cookies.txt',
+                '--cookies-from-browser', 'firefox',
                 '-f', 'b',
                 '-o', output_file,
                 '--merge-output-format', 'mp4',
