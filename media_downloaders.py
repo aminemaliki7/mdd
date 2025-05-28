@@ -21,7 +21,7 @@ def download_mp3(url, output_path='youtube_audio', filename=None):
 
         cmd = [
             'yt-dlp',
-            '--cookies-from-browser', 'firefox',
+            '--cookies', 'cookies.txt'
             '-x',
             '--audio-format', 'mp3',
             '--audio-quality', '0',
@@ -103,7 +103,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
 
         cmd = [
             'yt-dlp',
-            '--cookies-from-browser', 'firefox',
+            '--cookies', 'cookies.txt'
             '-f', format_selection,
             '-o', output_file,
             '--merge-output-format', 'mp4',
@@ -144,7 +144,7 @@ def download_social_video(url, output_path='social_videos', filename=None):
 
         cmd = [
             'yt-dlp',
-            '--cookies-from-browser', 'firefox',
+            '--cookies', 'cookies.txt'
             '--merge-output-format', 'mp4',
             '-o', output_file,
             '--no-playlist',
