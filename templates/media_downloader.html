@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body class="bg-white text-black d-flex flex-column min-vh-100">
-
-    <!-- Header -->
     <header class="border-bottom py-3">
         <div class="container d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
@@ -20,9 +18,7 @@
         </div>
     </header>
 
-    <!-- Main -->
     <main class="container py-4 flex-grow-1">
-        <!-- Tab Navigation -->
         <ul class="nav nav-tabs border-0" id="mediaTabs" role="tablist">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#youtube-audio">YouTube Audio</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#youtube-video">YouTube Video</button></li>
@@ -30,10 +26,9 @@
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#social">Shorts / Reels / TikTok</button></li>
         </ul>
 
-        <!-- Tab Content -->
         <div class="tab-content pt-3">
             <div class="tab-pane fade show active" id="youtube-audio">
-                <form action="/download-audio" method="POST">
+                <form id="youtube-form" action="/download-audio" method="POST">
                     <input type="url" class="form-control mb-2" name="url" placeholder="YouTube video URL" required>
                     <input type="text" class="form-control mb-2" name="filename" placeholder="Custom filename (optional)">
                     <button class="btn btn-dark w-100" type="submit">Download Audio</button>
@@ -41,7 +36,7 @@
             </div>
 
             <div class="tab-pane fade" id="youtube-video">
-                <form action="/download-youtube" method="POST">
+                <form id="youtube-video-form" action="/download-youtube" method="POST">
                     <input type="url" class="form-control mb-2" name="url" placeholder="YouTube video URL" required>
                     <input type="text" class="form-control mb-2" name="filename" placeholder="Custom filename (optional)">
                     <select name="quality" class="form-select mb-2">
@@ -56,7 +51,7 @@
             </div>
 
             <div class="tab-pane fade" id="pinterest">
-                <form action="/download-video" method="POST">
+                <form id="pinterest-form" action="/download-video" method="POST">
                     <input type="url" class="form-control mb-2" name="url" placeholder="Pinterest video URL" required>
                     <input type="text" class="form-control mb-2" name="filename" placeholder="Custom filename (optional)">
                     <button class="btn btn-dark w-100" type="submit">Download Pinterest Video</button>
@@ -64,7 +59,7 @@
             </div>
 
             <div class="tab-pane fade" id="social">
-                <form action="/download-social" method="POST">
+                <form id="social-form" action="/download-social" method="POST">
                     <input type="url" class="form-control mb-2" name="url" placeholder="Shorts / Reels / TikTok URL" required>
                     <input type="text" class="form-control mb-2" name="filename" placeholder="Custom filename (optional)">
                     <button class="btn btn-dark w-100" type="submit">Download Social Video</button>
@@ -72,18 +67,14 @@
             </div>
         </div>
 
-        <!-- Download Status -->
         <div id="download-status" class="mt-4" style="display: none;">
             <h5>Download Status</h5>
             <div id="downloads-container"></div>
         </div>
 
-        <!-- Developer API Section -->
         <section class="mt-5">
             <h5 class="mb-3">🔗 Developer API</h5>
-            <p class="small text-muted">
-                Integrate this downloader into your app using the API endpoint below:
-            </p>
+            <p class="small text-muted">Integrate this downloader into your app using the API endpoint below:</p>
             <div class="bg-light border rounded p-3">
 <pre class="mb-0"><code>POST https://yourdomain.com/api/download
 Content-Type: application/json
@@ -98,7 +89,6 @@ Content-Type: application/json
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="border-top py-3">
         <div class="container text-center small text-muted">
             &copy; {{ current_year }} Media Downloader. All rights reserved.
