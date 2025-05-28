@@ -15,13 +15,13 @@ def download_mp3(url, output_path='youtube_audio', filename=None):
         os.makedirs(output_path, exist_ok=True)
         if not filename:
             filename = f"audio_{uuid.uuid4().hex[:8]}"
-        filename = re.sub(r'[^\w\-_.]', '_', filename)
+        filename = re.sub(r'[\w\-_.]', '_', filename)
         output_file = os.path.join(output_path, f"{filename}.mp3")
         print(f"Downloading audio from: {url}")
 
         cmd = [
             'yt-dlp',
-            '--cookies', 'cookies.txt'
+            '--cookies', 'cookies.txt',
             '-x',
             '--audio-format', 'mp3',
             '--audio-quality', '0',
@@ -48,17 +48,14 @@ def download_pinterest_video(url, output_path='pinterest_videos', filename=None)
 
         pin_id = re.search(r'/pin/(\d+)', url)
         pin_id = pin_id.group(1) if pin_id else uuid.uuid4().hex[:8]
-        if filename:
-            safe_filename = re.sub(r'[^\w\-_.]', '_', filename)
-        else:
-            safe_filename = f"pinterest_{pin_id}"
+        safe_filename = re.sub(r'[\w\-_.]', '_', filename) if filename else f"pinterest_{pin_id}"
         output_filename = f"{safe_filename}.mp4"
         output_file = os.path.join(output_path, output_filename)
 
-        cmd = ['yt-dlp', '--merge-output-format', 'mp4', '-o', output_file, '--no-warnings', url]
+        cmd = ['yt-dlp', '--cookies', 'cookies.txt', '--merge-output-format', 'mp4', '-o', output_file, '--no-warnings', url]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            alt_cmd = ['yt-dlp', '-f', 'b', '--merge-output-format', 'mp4', '-o', output_file, url]
+            alt_cmd = ['yt-dlp', '--cookies', 'cookies.txt', '-f', 'b', '--merge-output-format', 'mp4', '-o', output_file, url]
             alt_result = subprocess.run(alt_cmd, capture_output=True, text=True)
             if alt_result.returncode != 0:
                 return None
@@ -84,10 +81,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
             elif 'youtu.be' in parsed_url.netloc:
                 video_id = parsed_url.path.lstrip('/')
 
-        if filename:
-            safe_filename = re.sub(r'[^\w\-_.]', '_', filename)
-        else:
-            safe_filename = f"youtube_{video_id or uuid.uuid4().hex[:8]}"
+        safe_filename = re.sub(r'[\w\-_.]', '_', filename) if filename else f"youtube_{video_id or uuid.uuid4().hex[:8]}"
         output_filename = f"{safe_filename}.mp4"
         output_file = os.path.join(output_path, output_filename)
 
@@ -103,7 +97,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
 
         cmd = [
             'yt-dlp',
-            '--cookies', 'cookies.txt'
+            '--cookies', 'cookies.txt',
             '-f', format_selection,
             '-o', output_file,
             '--merge-output-format', 'mp4',
@@ -118,7 +112,7 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
             print(f"Primary download failed: {result.stderr}")
             alt_cmd = [
                 'yt-dlp',
-                '--cookies-from-browser', 'firefox',
+                '--cookies', 'cookies.txt',
                 '-f', 'b',
                 '-o', output_file,
                 '--merge-output-format', 'mp4',
@@ -139,12 +133,12 @@ def download_youtube_video(url, output_path='youtube_videos', filename=None, qua
 def download_social_video(url, output_path='social_videos', filename=None):
     try:
         os.makedirs(output_path, exist_ok=True)
-        filename = re.sub(r'[^\w\-_.]', '_', filename) if filename else f"social_{uuid.uuid4().hex[:8]}"
+        filename = re.sub(r'[\w\-_.]', '_', filename) if filename else f"social_{uuid.uuid4().hex[:8]}"
         output_file = os.path.join(output_path, f"{filename}.mp4")
 
         cmd = [
             'yt-dlp',
-            '--cookies', 'cookies.txt'
+            '--cookies', 'cookies.txt',
             '--merge-output-format', 'mp4',
             '-o', output_file,
             '--no-playlist',
